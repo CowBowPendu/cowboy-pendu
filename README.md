@@ -1,1 +1,136 @@
 # cowboy-pendu
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Cowboy Pendu Amélioré</title>
+<style>
+body { font-family: monospace; background: #f0f0f0; text-align: center; padding: 20px; }
+#mot { font-size: 2em; margin: 20px; }
+#lettres button { font-size: 1em; margin: 2px; padding: 5px 10px; }
+#info { margin: 20px; font-weight: bold; }
+#score, #vies { font-size: 1.2em; margin: 10px; }
+.correct { color: green; font-weight: bold; }
+.incorrect { color: red; font-weight: bold; }
+#ad { margin: 20px; background: #fff3cd; padding: 10px; border: 1px solid #ffeeba; }
+#don { margin: 20px; }
+</style>
+</head>
+<body>
+
+<h1>🤠 Cowboy Pendu</h1>
+
+<div id="score">Score : 0</div>
+<div id="vies">Vies : 0</div>
+<div id="cowboy">🤠</div>
+<div id="mot"></div>
+<div id="lettres"></div>
+<div id="info"></div>
+
+<!-- Emplacement pour publicité -->
+<div id="ad">
+  🌟 Ici vous pourrez mettre votre publicité (ex: Google AdSense)
+</div>
+
+<!-- Bouton de dons -->
+<div id="don">
+  <a href="https://www.paypal.com/donate?hosted_button_id=XXXXXX" target="_blank">
+    💖 Soutenez l'auteur ! Cliquez ici pour faire un don
+  </a>
+</div>
+
+<script>
+// ----------------------------
+// Mots français (aucun chiffre)
+const mots_faciles = ["chat","chien","pomme","livre","maison","soleil","lune","eau","arbre","fleur"];
+const mots_moyens = ["ordinateur","terminal","reseau","fichier","application","interface","matrice","vecteur","musique","histoire"];
+const mots_difficiles = ["cryptographie","synchronisation","algorithmie","optimisation","intelligence","artificielle","microelectronique","astronautique","biotechnologie","psychologie"];
+
+// Cowboy emoji selon vies
+const cowboyStages = ["🤠","🤠","🤠","🤠","🤠","😰","😱"];
+
+let motMystere = "";
+let motPublic = "";
+let lettresUtilisees = [];
+let vies = 0;
+let score = 0;
+let niveau = "1";
+
+// ----------------------------
+// Choisir mot
+function choisirMot() {
+    let liste = [];
+    if(niveau === "1") liste = mots_faciles;
+    else if(niveau === "2") liste = mots_moyens;
+    else liste = mots_difficiles;
+
+    motMystere = liste[Math.floor(Math.random()*liste.length)];
+    motPublic = "_".repeat(motMystere.length);
+    lettresUtilisees = [];
+    vies = niveau==="1"?10:niveau==="2"?7:Math.max(5, Math.floor(motMystere.length/2));
+    afficher();
+}
+
+// ----------------------------
+// Afficher infos
+function afficher() {
+    document.getElementById("mot").innerHTML = motPublic.split("").join(" ");
+    document.getElementById("vies").textContent = "Vies : " + vies;
+    document.getElementById("score").textContent = "Score : " + score;
+    let stage = Math.min(cowboyStages.length-1, 7-vies);
+    document.getElementById("cowboy").textContent = cowboyStages[stage];
+
+    // Lettres
+    let lettresHTML = "";
+    for(let i=65;i<=90;i++){
+        let l = String.fromCharCode(i).toLowerCase();
+        lettresHTML += `<button onclick="jouer('${l}')" ${lettresUtilisees.includes(l)?'disabled':''}>${l}</button>`;
+    }
+    document.getElementById("lettres").innerHTML = lettresHTML;
+}
+
+// ----------------------------
+// Jouer une lettre
+function jouer(lettre){
+    lettresUtilisees.push(lettre);
+    if(motMystere.includes(lettre)){
+        motPublic = motMystere.split("").map((c,i)=>lettre===c?c:motPublic[i]).join("");
+        document.getElementById("info").textContent = "✅ Bien joué !";
+        document.getElementById("info").className = "correct";
+        if(motPublic === motMystere){
+            score++;
+            document.getElementById("info").textContent = "🎉 Bravo ! Le mot était : " + motMystere;
+            setTimeout(nouvellePartie,1500);
+        }
+    } else {
+        vies--;
+        document.getElementById("info").textContent = "❌ Mauvaise lettre !";
+        document.getElementById("info").className = "incorrect";
+        if(vies===0){
+            document.getElementById("info").textContent = "💀 Le cowboy est capturé ! Le mot était : " + motMystere;
+            setTimeout(nouvellePartie,1500);
+        }
+    }
+    afficher();
+}
+
+// ----------------------------
+// Nouvelle partie avec choix niveau
+function nouvellePartie(){
+    niveau = prompt("Choisissez la difficulté : 1 = Facile, 2 = Moyen, 3 = Difficile", "1");
+    if(["1","2","3"].includes(niveau)){
+        choisirMot();
+    } else {
+        alert("Option invalide, niveau Facile choisi par défaut");
+        niveau = "1";
+        choisirMot();
+    }
+}
+
+// Lancer la première partie
+nouvellePartie();
+</script>
+
+</body>
+</html>
